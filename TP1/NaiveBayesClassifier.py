@@ -13,6 +13,8 @@ class NaiveBayesClassifier:
         proba = []
         # Inicio del clasificador
         target_names = y.unique()
+        if type(tests[0]) is not list:
+            tests = [tests]
         for test in tests:
             probs = []
             for case in target_names:
