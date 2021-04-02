@@ -1,8 +1,9 @@
 import argparse
 import pandas as pd
 import openpyxl
-
-from TP1.BayesianNetwork import BayesianNetwork
+import NaiveBayesClassifier
+import BayesianNetwork
+from sklearn.model_selection import train_test_split
 
 
 def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: bool, avena: bool, futbol: bool):
@@ -26,7 +27,21 @@ def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: 
 
 def argentine_news(dataset_path: str):
     dataset = pd.read_excel(dataset_path)
-    pass
+    # print(dataset.describe())
+    # print(dataset.head())
+    X = dataset.iloc[:, :3]
+    y = dataset.iloc[:, 3]
+    train_percentage = 0.65
+    seed = 101
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_percentage,test_size=1-train_percentage, random_state=seed)
+
+    classifier = NaiveBayesClassifier(X_train, y_train)
+
+    # successes, errors, raw_results, expected_results = classifier.test(X_test)
+    # conf_matrix = confusion_matrix(classifier.classes)
+    # printTable(conf_matrix)
+    # printTable(calculateMetrics(conf_matrix))
+    # drawRocCurve()
 
 
 def admissions(dataset_path: str):
@@ -37,6 +52,58 @@ def admissions(dataset_path: str):
     dependency_graph = {'admit': ['gre', 'rank', 'gpa'], 'gre': ['rank'], 'gpa': ['rank'], 'rank': []}
 
     BayesianNetwork(dataset, dependency_graph)
+
+
+def confusion_matrix(classes):
+    confusion_matrix = {c: {c: 0 for c in classes} for c in classes}
+    # for print: matrix += str(table[row][col]).ljust(14)[:14] + ' '
+
+
+def calculateMetrics(confusion_matrix):
+    metricsTable = {}
+    for variable in confusion_matrix.keys():
+        TP = 0
+        TN = 0
+        FN = 0
+        FP = 0
+        Total = 0
+        for row in confusion_matrix:
+            for col in confusion_matrix[row]:
+                Total += confusion_matrix[row][col]
+                if row == variable and row == col:
+                    TP += confusion_matrix[row][col]
+                elif col == variable:
+                    FP += confusion_matrix[row][col]
+                elif row == variable:
+                    FN += confusion_matrix[row][col]
+                else:
+                    TN += confusion_matrix[row][col]
+        accuracy = (TP + TN) / (TP + TN + FN + FP)
+        precision = TP / (TP + FP)
+        recall = TP / (TP + FN)
+        TPrate = TP / (TP + FN)
+        FPrate = FP / (FP + TN)
+        F1score = (2 * precision * recall) / (precision + recall)
+        metricsTable[variable] = {'Accuracy': accuracy, 'Precision': precision, 'TP Rate': TPrate, 'FP Rate': FPrate, 'F1-Score': F1score}
+        
+    return metricsTable
+
+
+def printTable(table):
+    rows = list(table.keys())
+    columns = list(table[rows[0]].keys())
+    row_len = 15
+
+    matrix = ''.ljust(row_len)[:row_len] + ' '
+    for col in columns:
+        matrix += col.ljust(row_len)[:row_len] + ' '
+
+    for row in rows:
+        matrix += '\n' + row.ljust(row_len)[:row_len] + ' '
+        for col in columns:
+            matrix += str(table[row][col]).ljust(row_len)[:row_len] + ' '
+
+    print(matrix)
 
 
 def str2bool(v):
