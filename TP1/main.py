@@ -6,8 +6,22 @@ from TP1.BayesianNetwork import BayesianNetwork
 
 
 def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: bool, avena: bool, futbol: bool):
+    ## Establecer variables
     dataset = pd.read_excel(dataset_path)
-    pass
+    x = [scones, cerveza, whisky, avena, futbol]
+    variables = dataset.keys().drop('Nacionalidad')
+    results = {}
+    ## Algoritmo Naive Bayes
+    for case in dataset['Nacionalidad']:
+        index = dataset.loc[dataset['Nacionalidad']==case].index
+        den = len(index) 
+        prob = (dataset['Nacionalidad'] == case).sum()
+        for var, val in zip(variables, x):
+            prob *= (dataset[var].iloc[index] == val).sum()/den
+        results[prob] = case
+    best = max(results.keys())
+    print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n'%(x, results[best]))
+
 
 
 def argentine_news(dataset_path: str):
