@@ -23,7 +23,7 @@ class NaiveBayesClassifier:
                 probs.append(prob)
             probs = np.array(probs)
             probs /= probs.sum()
-            index = np.argmax(prob)
+            index = np.argmax(probs)
             names.append(target_names[index])
             proba.append(probs[index])
         return names, proba
