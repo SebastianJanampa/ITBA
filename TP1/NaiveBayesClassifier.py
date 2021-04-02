@@ -2,10 +2,10 @@ import numpy as np
 class NaiveBayesClassifier:
     def __init__(self, X, y):
         # Establecer datos
-        self.x = x
+        self.x = X
         self.y = y
         # Nombres
-        self.variables = x.keys()
+        self.variables = X.keys()
         self.target = y.keys()
     def test(self, tests):
         # Outputs
