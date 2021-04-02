@@ -1,3 +1,30 @@
+import numpy as np
 class NaiveBayesClassifier:
     def __init__(self, X, y):
-        pass
+        # Establecer datos
+        self.x = x
+        self.y = y
+        # Nombres
+        self.variables = x.keys()
+        self.target = y.keys()
+    def test(self, tests):
+        # Outputs
+        names = []
+        proba = []
+        # Inicio del clasificador
+        target_names = y.unique()
+        for test in tests:
+            probs = []
+            for case in target_names:
+                index = self.y.loc[self.y==case].index
+                prob = (self.y == case).mean()
+                for var, val in zip(self.variables, test):
+                    prob *= (self.x[var].iloc[index] == val).mean()
+                probs.append(prob)
+            probs = np.array(probs)
+            probs /= probs.sum()
+            index = np.argmax(prob)
+            names.append(target_names[index])
+            proba.append(probs[index])
+        return names, proba
+    
