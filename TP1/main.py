@@ -1,28 +1,27 @@
 import argparse
 import pandas as pd
 import openpyxl
-import NaiveBayesClassifier
-import BayesianNetwork
+from NaiveBayesClassifier import NaiveBayesClassifier
+from BayesianNetwork import BayesianNetwork
 from sklearn.model_selection import train_test_split
 
 
 def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: bool, avena: bool, futbol: bool):
-    ## Establecer variables
+    # Establecer variables
     dataset = pd.read_excel(dataset_path)
     x = [scones, cerveza, whisky, avena, futbol]
     variables = dataset.keys().drop('Nacionalidad')
     results = {}
-    ## Algoritmo Naive Bayes
+    # Algoritmo Naive Bayes
     for case in dataset['Nacionalidad']:
-        index = dataset.loc[dataset['Nacionalidad']==case].index
-        den = len(index) 
+        index = dataset.loc[dataset['Nacionalidad'] == case].index
+        den = len(index)
         prob = (dataset['Nacionalidad'] == case).sum()
         for var, val in zip(variables, x):
-            prob *= (dataset[var].iloc[index] == val).sum()/den
+            prob *= (dataset[var].iloc[index] == val).sum() / den
         results[prob] = case
     best = max(results.keys())
-    print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n'%(x, results[best]))
-
+    print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n' % (x, results[best]))
 
 
 def argentine_news(dataset_path: str):
@@ -33,14 +32,15 @@ def argentine_news(dataset_path: str):
     y = dataset.iloc[:, 3]
     train_percentage = 0.65
     seed = 101
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_percentage,test_size=1-train_percentage, random_state=seed)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_percentage,
+                                                        test_size=1 - train_percentage, random_state=seed)
 
     classifier = NaiveBayesClassifier(X_train, y_train)
 
     # successes, errors, raw_results, expected_results = classifier.test(X_test)
-    # conf_matrix = confusion_matrix(classifier.classes)
-    # printTable(conf_matrix)
-    # printTable(calculateMetrics(conf_matrix))
+    # conf_matrix = get_confusion_matrix(classifier.classes)
+    # print_table(conf_matrix)
+    # print_table(calculate_metrics(conf_matrix))
     # drawRocCurve()
 
 
@@ -54,13 +54,13 @@ def admissions(dataset_path: str):
     BayesianNetwork(dataset, dependency_graph)
 
 
-def confusion_matrix(classes):
+def get_confusion_matrix(classes):
     confusion_matrix = {c: {c: 0 for c in classes} for c in classes}
     # for print: matrix += str(table[row][col]).ljust(14)[:14] + ' '
 
 
-def calculateMetrics(confusion_matrix):
-    metricsTable = {}
+def calculate_metrics(confusion_matrix):
+    metrics_table = {}
     for variable in confusion_matrix.keys():
         TP = 0
         TN = 0
@@ -84,12 +84,13 @@ def calculateMetrics(confusion_matrix):
         TPrate = TP / (TP + FN)
         FPrate = FP / (FP + TN)
         F1score = (2 * precision * recall) / (precision + recall)
-        metricsTable[variable] = {'Accuracy': accuracy, 'Precision': precision, 'TP Rate': TPrate, 'FP Rate': FPrate, 'F1-Score': F1score}
-        
-    return metricsTable
+        metrics_table[variable] = {'Accuracy': accuracy, 'Precision': precision, 'TP Rate': TPrate, 'FP Rate': FPrate,
+                                   'F1-Score': F1score}
+
+    return metrics_table
 
 
-def printTable(table):
+def print_table(table):
     rows = list(table.keys())
     columns = list(table[rows[0]].keys())
     row_len = 15
@@ -124,7 +125,8 @@ def main():
     args = vars(argparser.parse_args())
 
     switcher = {
-        1: lambda: british_preferences(args['dataset_path'], args['scones'], args['cerveza'], args['whisky'], args['avena'], args['futbol']),
+        1: lambda: british_preferences(args['dataset_path'], args['scones'], args['cerveza'], args['whisky'],
+                                       args['avena'], args['futbol']),
         2: lambda: argentine_news(args['dataset_path']),
         3: lambda: admissions(args['dataset_path']),
     }
