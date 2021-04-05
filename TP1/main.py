@@ -7,22 +7,21 @@ from sklearn.model_selection import train_test_split
 
 
 def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: bool, avena: bool, futbol: bool):
-    ## Establecer variables
+    # Establecer variables
     dataset = pd.read_excel(dataset_path)
     x = [scones, cerveza, whisky, avena, futbol]
     variables = dataset.keys().drop('Nacionalidad')
     results = {}
-    ## Algoritmo Naive Bayes
+    # Algoritmo Naive Bayes
     for case in dataset['Nacionalidad']:
-        index = dataset.loc[dataset['Nacionalidad']==case].index
-        den = len(index) 
+        index = dataset.loc[dataset['Nacionalidad'] == case].index
+        den = len(index)
         prob = (dataset['Nacionalidad'] == case).sum()
         for var, val in zip(variables, x):
-            prob *= (dataset[var].iloc[index] == val).sum()/den
+            prob *= (dataset[var].iloc[index] == val).sum() / den
         results[prob] = case
     best = max(results.keys())
-    print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n'%(x, results[best]))
-
+    print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n' % (x, results[best]))
 
 
 def argentine_news(dataset_path: str):
@@ -31,7 +30,8 @@ def argentine_news(dataset_path: str):
     y = dataset.iloc[:, 3]
     train_percentage = 0.9
     seed = 101
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_percentage,test_size=1-train_percentage, random_state=seed)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_percentage,
+                                                        test_size=1 - train_percentage, random_state=seed)
 
     classifier = NaiveBayesClassifier(X_train, y_train)
     classifier.train_ej_2()
@@ -45,23 +45,30 @@ def argentine_news(dataset_path: str):
     # drawRocCurve()
 
 
-def admissions(dataset_path: str):
+def admissions(dataset_path: str, probability_request: str):
     dataset = pd.read_csv(dataset_path)
     dataset['gre'] = dataset['gre'].apply(lambda value: 1 if value >= 500 else 0)
     dataset['gpa'] = dataset['gpa'].apply(lambda value: 1 if value >= 3 else 0)
 
     dependency_graph = {'admit': ['gre', 'rank', 'gpa'], 'gre': ['rank'], 'gpa': ['rank'], 'rank': []}
 
-    BayesianNetwork(dataset, dependency_graph)
+    bn = BayesianNetwork(dataset, dependency_graph)
+    request_elements = probability_request.split('|')
+    if len(request_elements) == 1:
+        probability = bn.get_probability(request_elements[0])
+    else:
+        probability = bn.get_probability(request_elements[0] + ',' + request_elements[1]) \
+                      / bn.get_probability(request_elements[1])
+    print(f'P({probability_request}) = {probability}')
 
 
-def confusion_matrix(classes):
+def get_confusion_matrix(classes):
     confusion_matrix = {c: {c: 0 for c in classes} for c in classes}
     # for print: matrix += str(table[row][col]).ljust(14)[:14] + ' '
 
 
-def calculateMetrics(confusion_matrix):
-    metricsTable = {}
+def calculate_metrics(confusion_matrix):
+    metrics_table = {}
     for variable in confusion_matrix.keys():
         TP = 0
         TN = 0
@@ -85,12 +92,13 @@ def calculateMetrics(confusion_matrix):
         TPrate = TP / (TP + FN)
         FPrate = FP / (FP + TN)
         F1score = (2 * precision * recall) / (precision + recall)
-        metricsTable[variable] = {'Accuracy': accuracy, 'Precision': precision, 'TP Rate': TPrate, 'FP Rate': FPrate, 'F1-Score': F1score}
-        
-    return metricsTable
+        metrics_table[variable] = {'Accuracy': accuracy, 'Precision': precision, 'TP Rate': TPrate, 'FP Rate': FPrate,
+                                   'F1-Score': F1score}
+
+    return metrics_table
 
 
-def printTable(table):
+def print_table(table):
     rows = list(table.keys())
     columns = list(table[rows[0]].keys())
     row_len = 15
@@ -122,12 +130,14 @@ def main():
     argparser.add_argument('-w', '--whisky', type='bool', choices=[True, False], required=False)
     argparser.add_argument('-a', '--avena', type='bool', choices=[True, False], required=False)
     argparser.add_argument('-f', '--futbol', type='bool', choices=[True, False], required=False)
+    argparser.add_argument('-r', '--probability_request', required=False)
     args = vars(argparser.parse_args())
 
     switcher = {
-        1: lambda: british_preferences(args['dataset_path'], args['scones'], args['cerveza'], args['whisky'], args['avena'], args['futbol']),
+        1: lambda: british_preferences(args['dataset_path'], args['scones'], args['cerveza'], args['whisky'],
+                                       args['avena'], args['futbol']),
         2: lambda: argentine_news(args['dataset_path']),
-        3: lambda: admissions(args['dataset_path']),
+        3: lambda: admissions(args['dataset_path'], args['probability_request']),
     }
     switcher.get(args['exercise'])()
 
