@@ -7,7 +7,7 @@ class NaiveBayesClassifier:
         self.y = y
 
         # Names
-        self.variables = self.X.keys()
+        self.variables = list(self.X.keys())
         self.target = self.y.keys()
 
         # Train data
@@ -116,7 +116,7 @@ class NaiveBayesClassifier:
         target_names = self.y.unique()
         # if type(tests[0]) is not list:
         #     tests = [tests]
-        for test in tests[:1]:
+        for test in tests:
             probs = []
             for case in target_names:
                 prob = (tests == case).mean()  # TODO: check
