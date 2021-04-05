@@ -1,8 +1,8 @@
 import argparse
 import pandas as pd
 import openpyxl
-import NaiveBayesClassifier
-import BayesianNetwork
+from NaiveBayesClassifier import NaiveBayesClassifier
+from BayesianNetwork import BayesianNetwork
 from sklearn.model_selection import train_test_split
 
 
@@ -27,17 +27,18 @@ def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: 
 
 def argentine_news(dataset_path: str):
     dataset = pd.read_excel(dataset_path)
-    # print(dataset.describe())
-    # print(dataset.head())
     X = dataset.iloc[:, :3]
     y = dataset.iloc[:, 3]
-    train_percentage = 0.65
+    train_percentage = 0.9
     seed = 101
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_percentage,test_size=1-train_percentage, random_state=seed)
 
     classifier = NaiveBayesClassifier(X_train, y_train)
+    classifier.train_ej_2()
 
     # successes, errors, raw_results, expected_results = classifier.test(X_test)
+    raw_results = classifier.test_ej_2(X_test)
+    print(raw_results)
     # conf_matrix = confusion_matrix(classifier.classes)
     # printTable(conf_matrix)
     # printTable(calculateMetrics(conf_matrix))
