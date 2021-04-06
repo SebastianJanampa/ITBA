@@ -40,7 +40,8 @@ def argentine_news(dataset_path: str):
     raw_results = classifier.test_ej_2(X_test)  # raw_results: [{'categoria1': prob, 'categoria2': prob, ..., 'categoriaN': prob}, ...] one dict for each row
 
     expected_results = y_test
-    conf_matrix = confusion_matrix(classifier.classes, raw_results, expected_results)
+    classes = classifier.target.unique()
+    conf_matrix = confusion_matrix(classes, raw_results, expected_results)
     print_table(conf_matrix)
     print_table(calculateMetrics(conf_matrix))
     drawRocCurve(raw_results, expected_results, 'Salud')
