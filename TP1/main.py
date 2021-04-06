@@ -15,10 +15,9 @@ def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: 
     # Algoritmo Naive Bayes
     for case in dataset['Nacionalidad']:
         index = dataset.loc[dataset['Nacionalidad'] == case].index
-        den = len(index)
-        prob = (dataset['Nacionalidad'] == case).sum()
+        prob = (dataset['Nacionalidad'] == case).mean()
         for var, val in zip(variables, x):
-            prob *= (dataset[var].iloc[index] == val).sum() / den
+            prob *= (dataset[var].iloc[index] == val).mean()
         results[prob] = case
     best = max(results.keys())
     print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n' % (x, results[best]))
