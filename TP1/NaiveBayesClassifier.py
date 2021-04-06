@@ -78,9 +78,9 @@ class NaiveBayesClassifier:
             for var in variables:
                 # Calculate probability
                 if 'word_' in var:
-                    length = self.count_words(cases) + 1  # LaPlace correction
+                    length = self.count_words(cases)  # LaPlace correction
                 else:
-                    length = len(cases) + 1  # LaPlace correction
+                    length = len(cases)   # LaPlace correction
                 prob = cases[var].sum() / length
 
                 # Add to probabilities
@@ -94,13 +94,12 @@ class NaiveBayesClassifier:
         words_columns = self.X.loc[:, self.X.columns.str.startswith('word_')].keys()
         for word in words_columns:
             aux = word[5:]  # take out 'word_' from word
-            self.X[word] = (tests['titular'].str.count(aux))  # amount of times `word` appears in 'titular' column of the same row
+            tests[word] = (tests['titular'].str.count(aux))  # amount of times `word` appears in 'titular' column of the same row
 
         # Parse `fuente` column into a column for each source, with a 1 if was that source and 0 otherwise
         self.separate_sources(tests)
 
         tests = tests.drop(columns=['titular', 'fuente', 'fecha'], axis=1)
-
         return tests
 
 
@@ -119,7 +118,7 @@ class NaiveBayesClassifier:
         for test in tests:
             probs = []
             for case in target_names:
-                prob = (tests == case).mean()  # TODO: check
+                prob = (self.y == case).mean()  # TODO: check
                 for var in self.variables:
                     if var not in self.probabilities[case]:
                         continue

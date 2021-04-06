@@ -38,7 +38,7 @@ def argentine_news(dataset_path: str):
 
     # successes, errors, raw_results, expected_results = classifier.test(X_test)
     raw_results = classifier.test_ej_2(X_test)  # raw_results: [{'categoria1': prob, 'categoria2': prob, ..., 'categoriaN': prob}, ...] one dict for each row
-    print(raw_results)
+
     expected_results = y_test
     conf_matrix = confusion_matrix(classifier.classes, raw_results, expected_results)
     print_table(conf_matrix)
