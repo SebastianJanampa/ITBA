@@ -4,6 +4,7 @@ import openpyxl
 from NaiveBayesClassifier import NaiveBayesClassifier
 from BayesianNetwork import BayesianNetwork
 from sklearn.model_selection import train_test_split
+from matplotlib import pyplot as plt
 
 
 def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: bool, avena: bool, futbol: bool):
@@ -36,12 +37,13 @@ def argentine_news(dataset_path: str):
     classifier.train_ej_2()
 
     # successes, errors, raw_results, expected_results = classifier.test(X_test)
-    raw_results = classifier.test_ej_2(X_test)
+    raw_results = classifier.test_ej_2(X_test)  # raw_results: [{'categoria1': prob, 'categoria2': prob, ..., 'categoriaN': prob}, ...] one dict for each row
     print(raw_results)
-    # conf_matrix = confusion_matrix(classifier.classes)
-    # printTable(conf_matrix)
-    # printTable(calculateMetrics(conf_matrix))
-    # drawRocCurve()
+    expected_results = y_test
+    conf_matrix = confusion_matrix(classifier.classes, raw_results, expected_results)
+    printTable(conf_matrix)
+    printTable(calculateMetrics(conf_matrix))
+    drawRocCurve(raw_results, expected_results, 'Salud')
 
 
 def admissions(dataset_path: str, probability_request: str):
@@ -61,40 +63,96 @@ def admissions(dataset_path: str, probability_request: str):
     print(f'P({probability_request}) = {probability}')
 
 
-def get_confusion_matrix(classes):
-    confusion_matrix = {c: {c: 0 for c in classes} for c in classes}
-    # for print: matrix += str(table[row][col]).ljust(14)[:14] + ' '
+def printTable(table):
+    rows = list(table.keys())
+    columns = list(table[rows[0]].keys())
+    offset = 15
+
+    matrix = ''.ljust(offset)[:offset] + ' '
+    for col in columns:
+        matrix += col.ljust(offset)[:offset] + ' '
+
+    for row in rows:
+        matrix += '\n' + row.ljust(offset)[:offset] + ' '
+        for col in columns:
+            matrix += str(table[row][col]).ljust(offset)[:offset] + ' '
+
+    print(matrix)
 
 
-def calculate_metrics(confusion_matrix):
-    metrics_table = {}
-    for variable in confusion_matrix.keys():
+def confusion_matrix(categories, raw_results, expected_results):
+    confusion_matrix = {c: {c: 0 for c in categories} for c in categories}
+    for i in range(len(expected_results)):
+        predictions = raw_results[i]
+        expected_result = expected_results[i]
+        predicted_result = max(predictions, key=lambda i: predictions[i])
+        confusion_matrix[expected_result][predicted_result] += 1
+    return confusion_matrix
+
+
+def drawRocCurve(raw_results, expected_results, class_name):
+    x = []
+    y = []
+    thoughputs = []
+    for i in range(0, 11):
+        throughput = i / 10
+        TP = 0
+        FN = 0
+        FP = 0
+        TN = 0
+        for j in range(len(raw_results[class_name])):
+            probability = raw_results[class_name][j]
+            expected_result = expected_results[j]
+            if probability >= throughput:
+                if expected_result == class_name:
+                    TP += 1
+                else:
+                    FP += 1
+            else:
+                if expected_result == class_name:
+                    FN += 1
+                else:
+                    TN += 1
+        FPrate = FP / (FP + TN)
+        TPrate = TP / (TP + FN)
+        x.append(FPrate)
+        y.append(TPrate)
+        thoughputs.append(throughput)
+    plt.plot(x, y, '-or')
+    for j, throughput in enumerate(thoughputs):
+        plt.annotate(str(throughput), (x[j], y[j]))
+    plt.show()
+
+
+def calculateMetrics(confusion_matrix):
+    metricsTable = {}
+    for attr in confusion_matrix.keys():
         TP = 0
         TN = 0
         FN = 0
         FP = 0
-        Total = 0
+        total = 0
         for row in confusion_matrix:
             for col in confusion_matrix[row]:
-                Total += confusion_matrix[row][col]
-                if row == variable and row == col:
-                    TP += confusion_matrix[row][col]
-                elif col == variable:
-                    FP += confusion_matrix[row][col]
-                elif row == variable:
-                    FN += confusion_matrix[row][col]
+                value = confusion_matrix[row][col]
+                total += value
+                if row == attr and col == attr:
+                    TP += value
+                elif col == attr:
+                    FP += value
+                elif row == attr:
+                    FN += value
                 else:
-                    TN += confusion_matrix[row][col]
+                    TN += value
         accuracy = (TP + TN) / (TP + TN + FN + FP)
         precision = TP / (TP + FP)
         recall = TP / (TP + FN)
+        F1score = (2 * precision * recall) / (precision + recall)
         TPrate = TP / (TP + FN)
         FPrate = FP / (FP + TN)
-        F1score = (2 * precision * recall) / (precision + recall)
-        metrics_table[variable] = {'Accuracy': accuracy, 'Precision': precision, 'TP Rate': TPrate, 'FP Rate': FPrate,
-                                   'F1-Score': F1score}
-
-    return metrics_table
+        metricsTable[attr] = {'Accuracy': accuracy, 'Precision': precision, 'Tasa TP': TPrate, 'Tasa FP': FPrate, 'F1-score': F1score}
+        
+    return metricsTable
 
 
 def print_table(table):
