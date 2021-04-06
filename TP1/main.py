@@ -41,8 +41,8 @@ def argentine_news(dataset_path: str):
     print(raw_results)
     expected_results = y_test
     conf_matrix = confusion_matrix(classifier.classes, raw_results, expected_results)
-    printTable(conf_matrix)
-    printTable(calculateMetrics(conf_matrix))
+    print_table(conf_matrix)
+    print_table(calculateMetrics(conf_matrix))
     drawRocCurve(raw_results, expected_results, 'Salud')
 
 
@@ -61,23 +61,6 @@ def admissions(dataset_path: str, probability_request: str):
         probability = bn.get_probability(request_elements[0] + ',' + request_elements[1]) \
                       / bn.get_probability(request_elements[1])
     print(f'P({probability_request}) = {probability}')
-
-
-def printTable(table):
-    rows = list(table.keys())
-    columns = list(table[rows[0]].keys())
-    offset = 15
-
-    matrix = ''.ljust(offset)[:offset] + ' '
-    for col in columns:
-        matrix += col.ljust(offset)[:offset] + ' '
-
-    for row in rows:
-        matrix += '\n' + row.ljust(offset)[:offset] + ' '
-        for col in columns:
-            matrix += str(table[row][col]).ljust(offset)[:offset] + ' '
-
-    print(matrix)
 
 
 def confusion_matrix(categories, raw_results, expected_results):
