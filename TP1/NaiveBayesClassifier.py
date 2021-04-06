@@ -4,6 +4,7 @@ class NaiveBayesClassifier:
     def __init__(self, X, y):
         # Data
         self.X = X
+        self.X_copy = X.copy(deep=True)
         self.y = y
 
         # Names
@@ -21,10 +22,8 @@ class NaiveBayesClassifier:
             to be trained by the NaiveBayesClassifier
         """
         self.obtain_key_words_ej_2()
-        self.separate_sources(self.X)
-        self.X = self.X.drop(columns=['titular', 'fuente', 'fecha'], axis=1)
+        self.X = self.X.drop(columns=['titular', 'fecha'], axis=1)
         self.variables.remove('titular')
-        self.variables.remove('fuente')
         self.variables.remove('fecha')
     
     def obtain_key_words_ej_2(self):
@@ -47,16 +46,12 @@ class NaiveBayesClassifier:
         most_repeated = dict(sorted(words_count.items(), key = itemgetter(1), reverse = True)[:self.n_keywords]).keys()
         for word in most_repeated:
             self.X['word_'+str(word)] = (self.X['titular'].str.count(word))  # amount of times `word` appears in 'titular' column of the same row
+            self.variables.append('word_'+str(word))
 
 
     def count_words(self, df):
         # Count total number of words
-        return np.array([len(words) for words in df]).sum()
-
-
-    def separate_sources(self, df):
-        for source in df['fuente'].unique():
-            df['source_'+str(source)] = ((df['fuente'] == source) * 1)
+        return np.array([len(words) for words in df.titular]).sum()
 
 
     def train_ej_2(self):
@@ -65,28 +60,28 @@ class NaiveBayesClassifier:
     
 
     def train(self):
-        ## Establecer variables
-        # x = [scones, cerveza, whisky, avena, futbol]
-        variables = self.X.keys()
         target = self.y
 
         ## Algoritmo Naive Bayes
         for case in target.unique():
+            if case not in self.probabilities:
+                self.probabilities[case] = {}
             cases = self.X.loc[target==case]
 
             # Generate frequencies
-            for var in variables:
+            for var in self.variables:
                 # Calculate probability
                 if 'word_' in var:
-                    length = self.count_words(cases)  # LaPlace correction
-                else:
-                    length = len(cases)   # LaPlace correction
-                prob = cases[var].sum() / length
+                    length = self.count_words(self.X_copy.loc[target==case])  # LaPlace correction
+                    prob = cases[var].count() / length
+                    self.probabilities[case][var] = prob
+                elif var == 'fuente':
+                    length = len(cases)  # LaPlace correction
+                    for source in cases[var].unique():
+                        amount = cases.loc[cases['fuente']==source].count()['fuente']
+                        prob = amount / length
+                        self.probabilities[case][var] = prob
 
-                # Add to probabilities
-                if case not in self.probabilities:
-                    self.probabilities[case] = {}
-                self.probabilities[case][var] = prob
 
 
     def preprocess_tests(self, tests):
@@ -96,15 +91,11 @@ class NaiveBayesClassifier:
             aux = word[5:]  # take out 'word_' from word
             tests[word] = (tests['titular'].str.count(aux))  # amount of times `word` appears in 'titular' column of the same row
 
-        # Parse `fuente` column into a column for each source, with a 1 if was that source and 0 otherwise
-        self.separate_sources(tests)
-
-        tests = tests.drop(columns=['titular', 'fuente', 'fecha'], axis=1)
+        tests = tests.drop(columns=['titular', 'fecha'], axis=1)
         return tests
 
 
     def test_ej_2(self, tests):
-        # TODO: test, do ROC and other metrics
         tests = self.preprocess_tests(tests)
 
         # Output
