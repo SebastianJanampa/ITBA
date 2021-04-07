@@ -1,5 +1,7 @@
 import numpy as np
 from operator import itemgetter
+
+
 class NaiveBayesClassifier:
     def __init__(self, X, y):
         # Data
@@ -15,7 +17,6 @@ class NaiveBayesClassifier:
         self.probabilities = {}  # {'Nacional': {'Clarin.com': 0.1, ...}, 'Deportes': {'Clarin.com': 0.03, ...}, ...}
         self.n_keywords = 5
 
-
     def preprocess_data(self):
         """
             Transforms 'Noticias_argentinas' into a binary table that is able
@@ -25,11 +26,11 @@ class NaiveBayesClassifier:
         self.X = self.X.drop(columns=['titular', 'fecha'], axis=1)
         self.variables.remove('titular')
         self.variables.remove('fecha')
-    
+
     def obtain_key_words_ej_2(self):
         words_count = {}
         titular = self.X['titular']
-        
+
         blacklist = ['para', 'tras', 'sobre', 'cómo', 'entre', 'contra', 'nuevo', 'como', 'está', 'tres',
                      'tiene', 'desde', 'este', 'hasta', 'todo', 'baja', 'dijo', 'podría', 'puede', 'pero']
         # Count words repetition
@@ -41,23 +42,21 @@ class NaiveBayesClassifier:
                     words_count[word] = 1
                 else:
                     words_count[word] += 1
-        
-        # Get `n` most repeated
-        most_repeated = dict(sorted(words_count.items(), key = itemgetter(1), reverse = True)[:self.n_keywords]).keys()
-        for word in most_repeated:
-            self.X['word_'+str(word)] = (self.X['titular'].str.count(word))  # amount of times `word` appears in 'titular' column of the same row
-            self.variables.append('word_'+str(word))
 
+        # Get `n` most repeated
+        most_repeated = dict(sorted(words_count.items(), key=itemgetter(1), reverse=True)[:self.n_keywords]).keys()
+        for word in most_repeated:
+            self.X['word_' + str(word)] = (
+                self.X['titular'].str.count(word))  # amount of times `word` appears in 'titular' column of the same row
+            self.variables.append('word_' + str(word))
 
     def count_words(self, df):
         # Count total number of words
         return np.array([len(words.split(' ')) for words in df.titular]).sum()
 
-
     def train_ej_2(self):
         self.preprocess_data()
         self.train()
-    
 
     def train(self):
         target = self.y
@@ -76,28 +75,25 @@ class NaiveBayesClassifier:
             for var in self.variables:
                 # Calculate probability
                 if 'word_' in var:
-
                     prob = cases[var].sum() / number_of_words_for_case
                     self.probabilities[case][var] = prob
                 elif var == 'fuente':
                     length = len(cases)  # LaPlace correction
                     for source in cases[var].unique():
-                        amount = cases.loc[cases['fuente']==source].count()['fuente']
+                        amount = cases.loc[cases['fuente'] == source].count()['fuente']
                         prob = amount / length
                         self.probabilities[case][source] = prob
-
-
 
     def preprocess_tests(self, tests):
         # Parse `titular` column into word columns, each with the amount of times the word appears
         words_columns = self.X.loc[:, self.X.columns.str.startswith('word_')].keys()
         for word in words_columns:
             aux = word[5:]  # take out 'word_' from word
-            tests[word] = (tests['titular'].str.count(aux))  # amount of times `word` appears in 'titular' column of the same row
+            tests[word] = (
+                tests['titular'].str.count(aux))  # amount of times `word` appears in 'titular' column of the same row
 
         tests = tests.drop(columns=['titular', 'fecha'], axis=1)
         return tests
-
 
     def test_ej_2(self, tests):
         tests = self.preprocess_tests(tests)
@@ -119,7 +115,7 @@ class NaiveBayesClassifier:
                 for var in self.variables:
                     if var in self.probabilities[case]:
                         p = self.probabilities[case][var]
-                        prob *= p if ('word_' in var and test[var] > 0) or (var == 'fuente') else 1-p
+                        prob *= p if ('word_' in var and test[var] > 0) or (var == 'fuente') else 1 - p
                 probs[case] = prob
             # probs = np.array(probs)
             # probs /= probs.sum()
@@ -128,4 +124,3 @@ class NaiveBayesClassifier:
             tests_prob.append(probs)
 
         return tests_prob
-    
