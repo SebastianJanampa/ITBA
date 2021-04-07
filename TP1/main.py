@@ -41,10 +41,10 @@ def argentine_news(dataset_path: str):
 
     expected_results = y_test
     classes = classifier.target.unique()
-    conf_matrix = confusion_matrix(classes, raw_results, expected_results)
-    print_table(conf_matrix)
-    print_table(calculateMetrics(conf_matrix))
-    drawRocCurve(raw_results, expected_results, 'Salud')
+    # conf_matrix = confusion_matrix(classes, raw_results, expected_results)
+    # print_table(conf_matrix)
+    # print_table(calculateMetrics(conf_matrix))
+    # drawRocCurve(raw_results, expected_results, 'Salud')
 
 
 def admissions(dataset_path: str, probability_request: str):
