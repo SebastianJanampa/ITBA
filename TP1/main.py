@@ -45,7 +45,6 @@ def argentine_news(dataset_path: str):
     classifier = NaiveBayesClassifier(X_train, y_train)
     classifier.train_ej_2()
 
-    # successes, errors, raw_results, expected_results = classifier.test(X_test)
     raw_results = classifier.test_ej_2(X_test)  # raw_results: [{'categoria1': prob, 'categoria2': prob, ..., 'categoriaN': prob}, ...] one dict for each row
 
     expected_results = y_test.dropna()
@@ -55,7 +54,9 @@ def argentine_news(dataset_path: str):
     print_table(conf_matrix)
     print()
     print_table(calculateMetrics(conf_matrix))
-    drawRocCurve(raw_results, expected_results, 'Deportes')
+    for _class in classes:
+        print(_class)
+        drawRocCurve(raw_results, expected_results, _class)
 
 
 def admissions(dataset_path: str, probability_request: str):
@@ -120,6 +121,7 @@ def drawRocCurve(raw_results, expected_results, class_name):
     plt.plot(x, y, '-or')
     for j, throughput in enumerate(thoughputs):
         plt.annotate(str(throughput), (x[j], y[j]))
+    plt.title(class_name)
     plt.show()
 
 

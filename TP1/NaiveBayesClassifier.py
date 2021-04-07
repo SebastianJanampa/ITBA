@@ -15,7 +15,7 @@ class NaiveBayesClassifier:
 
         # Train data
         self.probabilities = {}  # {'Nacional': {'Clarin.com': 0.1, ...}, 'Deportes': {'Clarin.com': 0.03, ...}, ...}
-        self.n_keywords = 20000
+        self.n_keywords = 1000
 
     def preprocess_data(self):
         """
@@ -100,7 +100,6 @@ class NaiveBayesClassifier:
         tests_prob = []
 
         # Inicio del clasificador
-        # TODO: contar todas las veces que aparece en el titulo
         target_names = self.y.unique()
         # if type(tests[0]) is not list:
         #     tests = [tests]
