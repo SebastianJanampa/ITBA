@@ -39,12 +39,12 @@ def argentine_news(dataset_path: str):
     # successes, errors, raw_results, expected_results = classifier.test(X_test)
     raw_results = classifier.test_ej_2(X_test)  # raw_results: [{'categoria1': prob, 'categoria2': prob, ..., 'categoriaN': prob}, ...] one dict for each row
 
-    expected_results = y_test
-    classes = classifier.target.unique()
-    # conf_matrix = confusion_matrix(classes, raw_results, expected_results)
-    # print_table(conf_matrix)
+    expected_results = y_test.dropna()
+    classes = [a for a in y_train.unique()]
+    conf_matrix = confusion_matrix(classes, raw_results, expected_results)
+    print_table(conf_matrix)
     # print_table(calculateMetrics(conf_matrix))
-    # drawRocCurve(raw_results, expected_results, 'Salud')
+    drawRocCurve(raw_results, expected_results, 'Salud')
 
 
 def admissions(dataset_path: str, probability_request: str):
@@ -65,12 +65,17 @@ def admissions(dataset_path: str, probability_request: str):
 
 
 def confusion_matrix(categories, raw_results, expected_results):
+    print()
+    categories = [c for c in categories if isinstance(c, str)]
     confusion_matrix = {c: {c: 0 for c in categories} for c in categories}
-    for i in range(len(expected_results)):
+    i = 0
+    for j, _ in expected_results.iteritems():
+    # for i in range(len(expected_results)):
         predictions = raw_results[i]
-        expected_result = expected_results[i]
+        expected_result = expected_results[j]
         predicted_result = max(predictions, key=lambda i: predictions[i])
         confusion_matrix[expected_result][predicted_result] += 1
+        j += 1
     return confusion_matrix
 
 

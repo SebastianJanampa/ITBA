@@ -9,7 +9,7 @@ class NaiveBayesClassifier:
 
         # Names
         self.variables = list(self.X.keys())
-        self.target = self.y.keys()
+        self.target = [a for a in self.y]
 
         # Train data
         self.probabilities = {}  # {'Nacional': {'Clarin.com': 0.1, ...}, 'Deportes': {'Clarin.com': 0.03, ...}, ...}
@@ -64,6 +64,8 @@ class NaiveBayesClassifier:
 
         ## Algoritmo Naive Bayes
         for case in target.unique():
+            if not isinstance(case, str):
+                continue
             if case not in self.probabilities:
                 self.probabilities[case] = {}
             cases = self.X.loc[target==case]
@@ -109,6 +111,8 @@ class NaiveBayesClassifier:
         for i, test in tests.iterrows():
             probs = {}
             for case in target_names:
+                if not isinstance(case, str):
+                    continue
                 prob = 1  # (self.y == case).mean()  # TODO: check
                 for var in self.variables:
                     if var in self.probabilities[case]:
