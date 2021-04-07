@@ -15,7 +15,7 @@ class NaiveBayesClassifier:
 
         # Train data
         self.probabilities = {}  # {'Nacional': {'Clarin.com': 0.1, ...}, 'Deportes': {'Clarin.com': 0.03, ...}, ...}
-        self.n_keywords = 5
+        self.n_keywords = 200
 
     def preprocess_data(self):
         """
@@ -37,7 +37,8 @@ class NaiveBayesClassifier:
         for row in titular:
             words = [word.lower() for word in row.split(' ')]
             for word in words:
-                if len(word) < 4 or word in blacklist: continue
+                if len(word) < 4 or word in blacklist:
+                    continue
                 if word not in words_count:
                     words_count[word] = 1
                 else:
@@ -46,8 +47,7 @@ class NaiveBayesClassifier:
         # Get `n` most repeated
         most_repeated = dict(sorted(words_count.items(), key=itemgetter(1), reverse=True)[:self.n_keywords]).keys()
         for word in most_repeated:
-            self.X['word_' + str(word)] = (
-                self.X['titular'].str.count(word))  # amount of times `word` appears in 'titular' column of the same row
+            self.X['word_' + str(word)] = (self.X['titular'].str.count(word))  # amount of times `word` appears in 'titular' column of the same row
             self.variables.append('word_' + str(word))
 
     def count_words(self, df):
@@ -63,8 +63,6 @@ class NaiveBayesClassifier:
 
         ## Algoritmo Naive Bayes
         for case in target.unique():
-            if not isinstance(case, str):
-                continue
             if case not in self.probabilities:
                 self.probabilities[case] = {}
 
@@ -79,7 +77,7 @@ class NaiveBayesClassifier:
                     self.probabilities[case][var] = prob
                 elif var == 'fuente':
                     length = len(cases)  # LaPlace correction
-                    for source in cases[var].unique():
+                    for source in self.X[var].unique():
                         amount = cases.loc[cases['fuente'] == source].count()['fuente']
                         prob = amount / length
                         self.probabilities[case][source] = prob
@@ -109,13 +107,15 @@ class NaiveBayesClassifier:
         for i, test in tests.iterrows():
             probs = {}
             for case in target_names:
-                if not isinstance(case, str):
-                    continue
-                prob = 1  # (self.y == case).mean()  # TODO: check
+                prob = (self.y == case).mean()  # TODO: check
                 for var in self.variables:
-                    if var in self.probabilities[case]:
+                    if 'word_' in var:
                         p = self.probabilities[case][var]
-                        prob *= p if ('word_' in var and test[var] > 0) or (var == 'fuente') else 1 - p
+                        prob *= p**test[var]
+                    elif var == 'fuente':
+                        for source in self.X[var].unique():
+                            p = self.probabilities[case][source]
+                            prob *= p ** (test[var] == source)
                 probs[case] = prob
             # probs = np.array(probs)
             # probs /= probs.sum()

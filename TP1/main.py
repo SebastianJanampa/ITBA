@@ -26,6 +26,15 @@ def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: 
 
 def argentine_news(dataset_path: str):
     dataset = pd.read_excel(dataset_path)
+    dataset.dropna(inplace=True)
+    dataset = dataset[
+        (dataset['categoria'] == 'Salud') |
+        (dataset['categoria'] == 'Deportes') |
+        (dataset['categoria'] == 'Economia') |
+        (dataset['categoria'] == 'Entretenimiento') |
+        (dataset['categoria'] == 'Internacional')
+    ]
+    dataset.drop_duplicates(inplace=True)
     X = dataset.iloc[:, :3]
     y = dataset.iloc[:, 3]
     train_percentage = 0.9
@@ -40,10 +49,12 @@ def argentine_news(dataset_path: str):
     raw_results = classifier.test_ej_2(X_test)  # raw_results: [{'categoria1': prob, 'categoria2': prob, ..., 'categoriaN': prob}, ...] one dict for each row
 
     expected_results = y_test.dropna()
+    expected_results = expected_results.reset_index(drop=True)
     classes = [a for a in y_train.unique()]
     conf_matrix = confusion_matrix(classes, raw_results, expected_results)
     print_table(conf_matrix)
-    # print_table(calculateMetrics(conf_matrix))
+    print()
+    print_table(calculateMetrics(conf_matrix))
     drawRocCurve(raw_results, expected_results, 'Salud')
 
 
@@ -68,14 +79,11 @@ def confusion_matrix(categories, raw_results, expected_results):
     print()
     categories = [c for c in categories if isinstance(c, str)]
     confusion_matrix = {c: {c: 0 for c in categories} for c in categories}
-    i = 0
     for j, _ in expected_results.iteritems():
-    # for i in range(len(expected_results)):
-        predictions = raw_results[i]
+        predictions = raw_results[j]
         expected_result = expected_results[j]
         predicted_result = max(predictions, key=lambda i: predictions[i])
         confusion_matrix[expected_result][predicted_result] += 1
-        j += 1
     return confusion_matrix
 
 
@@ -89,8 +97,8 @@ def drawRocCurve(raw_results, expected_results, class_name):
         FN = 0
         FP = 0
         TN = 0
-        for j in range(len(raw_results[class_name])):
-            probability = raw_results[class_name][j]
+        for j in range(len(raw_results)):
+            probability = raw_results[j][class_name]
             expected_result = expected_results[j]
             if probability >= throughput:
                 if expected_result == class_name:
