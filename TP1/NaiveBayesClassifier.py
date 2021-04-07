@@ -51,7 +51,7 @@ class NaiveBayesClassifier:
 
     def count_words(self, df):
         # Count total number of words
-        return np.array([len(words) for words in df.titular]).sum()
+        return np.array([len(words.split(' ')) for words in df.titular]).sum()
 
 
     def train_ej_2(self):
