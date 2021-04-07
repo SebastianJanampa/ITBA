@@ -17,17 +17,19 @@ class BayesianNetwork:
         parents = list(self.dependency_graph[variable])
         if len(parents) > 0:
             conditional_probability = self.dataset.groupby(parents)[variable] \
-                .apply(lambda g: g.value_counts() / len(g)) \
+                .apply(lambda g: (g.value_counts() + 1) / (len(g) + 2)) \
                 .reset_index()
             parents.extend([variable, 'probability'])
             conditional_probability.columns = parents
-            for _, row in conditional_probability[conditional_probability['probability'] == 1.000000].iterrows():
-                for value in list(set(self.dataset[variable].unique()) - {row[variable]}):
+            if variable == 'admit':
+                for _, row in conditional_probability.iterrows():
                     new_row = row.to_dict()
-                    new_row[variable] = value
-                    new_row['probability'] = 0.000000
-                    conditional_probability = conditional_probability.append(new_row, ignore_index=True)
-
+                    new_row[variable] = 1 - new_row[variable]
+                    new_row['probability'] = 1 - new_row['probability']
+                    if len(conditional_probability[(conditional_probability['gre'] == new_row['gre'])
+                                                   & (conditional_probability['rank'] == new_row['rank'])
+                                                   & (conditional_probability['gpa'] == new_row['gpa'])]) != 2:
+                        conditional_probability = conditional_probability.append(new_row, ignore_index=True)
         else:
             conditional_probability = self.dataset.groupby(variable) \
                 .apply(lambda g: len(g) / len(self.dataset[variable])) \
