@@ -80,7 +80,7 @@ class NaiveBayesClassifier:
                     for source in cases[var].unique():
                         amount = cases.loc[cases['fuente']==source].count()['fuente']
                         prob = amount / length
-                        self.probabilities[case][var] = prob
+                        self.probabilities[case][source] = prob
 
 
 
@@ -109,7 +109,7 @@ class NaiveBayesClassifier:
         for i, test in tests.iterrows():
             probs = {}
             for case in target_names:
-                prob = (self.y == case).mean()  # TODO: check
+                prob = 1  # (self.y == case).mean()  # TODO: check
                 for var in self.variables:
                     if var in self.probabilities[case]:
                         p = self.probabilities[case][var]
