@@ -68,14 +68,16 @@ class NaiveBayesClassifier:
                 continue
             if case not in self.probabilities:
                 self.probabilities[case] = {}
-            cases = self.X.loc[target==case]
+
+            cases = self.X.loc[target == case]
+            number_of_words_for_case = self.count_words(self.X_copy.loc[target == case])  # LaPlace correction
 
             # Generate frequencies
             for var in self.variables:
                 # Calculate probability
                 if 'word_' in var:
-                    length = self.count_words(self.X_copy.loc[target==case])  # LaPlace correction
-                    prob = cases[var].count() / length
+
+                    prob = cases[var].sum() / number_of_words_for_case
                     self.probabilities[case][var] = prob
                 elif var == 'fuente':
                     length = len(cases)  # LaPlace correction
