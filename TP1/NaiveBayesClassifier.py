@@ -106,13 +106,14 @@ class NaiveBayesClassifier:
         target_names = self.y.unique()
         # if type(tests[0]) is not list:
         #     tests = [tests]
-        for test in tests.iterrows():
+        for i, test in tests.iterrows():
             probs = {}
             for case in target_names:
                 prob = (self.y == case).mean()  # TODO: check
-                for var in test.variables:
+                for var in self.variables:
                     if var in self.probabilities[case]:
-                        prob *= self.probabilities[case][var]
+                        p = self.probabilities[case][var]
+                        prob *= p if ('word_' in var and test[var] > 0) or (var == 'fuente') else 1-p
                 probs[case] = prob
             # probs = np.array(probs)
             # probs /= probs.sum()
