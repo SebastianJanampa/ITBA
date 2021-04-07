@@ -1,6 +1,6 @@
 import numpy as np
 from operator import itemgetter
-
+import re
 
 class NaiveBayesClassifier:
     def __init__(self, X, y):
@@ -15,7 +15,7 @@ class NaiveBayesClassifier:
 
         # Train data
         self.probabilities = {}  # {'Nacional': {'Clarin.com': 0.1, ...}, 'Deportes': {'Clarin.com': 0.03, ...}, ...}
-        self.n_keywords = 200
+        self.n_keywords = 20000
 
     def preprocess_data(self):
         """
@@ -35,7 +35,7 @@ class NaiveBayesClassifier:
                      'tiene', 'desde', 'este', 'hasta', 'todo', 'baja', 'dijo', 'podría', 'puede', 'pero']
         # Count words repetition
         for row in titular:
-            words = [word.lower() for word in row.split(' ')]
+            words = [word.lower() for word in re.findall("[a-zA-ZáéíóúÁÉÍÓÚñÑ]+", row)]
             for word in words:
                 if len(word) < 4 or word in blacklist:
                     continue
@@ -107,7 +107,7 @@ class NaiveBayesClassifier:
         for i, test in tests.iterrows():
             probs = {}
             for case in target_names:
-                prob = (self.y == case).mean()  # TODO: check
+                prob = (self.y == case).mean()
                 for var in self.variables:
                     if 'word_' in var:
                         p = self.probabilities[case][var]
