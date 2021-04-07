@@ -5,7 +5,7 @@ from NaiveBayesClassifier import NaiveBayesClassifier
 from BayesianNetwork import BayesianNetwork
 from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
-
+import numpy as np
 
 def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: bool, avena: bool, futbol: bool):
     # Establecer variables
@@ -55,7 +55,7 @@ def argentine_news(dataset_path: str):
     print_table(conf_matrix)
     print()
     print_table(calculateMetrics(conf_matrix))
-    drawRocCurve(raw_results, expected_results, 'Salud')
+    drawRocCurve(raw_results, expected_results, 'Deportes')
 
 
 def admissions(dataset_path: str, probability_request: str):
@@ -98,7 +98,9 @@ def drawRocCurve(raw_results, expected_results, class_name):
         FP = 0
         TN = 0
         for j in range(len(raw_results)):
-            probability = raw_results[j][class_name]
+            props = raw_results[j].values()
+            total_p = np.array([p for p in props]).sum()
+            probability = raw_results[j][class_name] / total_p
             expected_result = expected_results[j]
             if probability >= throughput:
                 if expected_result == class_name:
