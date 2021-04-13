@@ -13,7 +13,7 @@ def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: 
     x = [scones, cerveza, whisky, avena, futbol]
     variables = dataset.keys().drop('Nacionalidad')
     results = {}
-    # Algoritmo Naive Bayes
+    # Algoritmo Naive Bayes sin laplace
     for case in dataset['Nacionalidad']:
         index = dataset.loc[dataset['Nacionalidad'] == case].index
         prob = (dataset['Nacionalidad'] == case).mean()
@@ -22,7 +22,17 @@ def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: 
         results[prob] = case
     best = max(results.keys())
     print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n' % (x, results[best]))
-
+    # Algoritmo Naive Bayes con laplace
+    results = {}
+    for case in dataset['Nacionalidad']:
+        index = dataset.loc[dataset['Nacionalidad'] == case].index
+        den = len(index)
+        prob = (dataset['Nacionalidad'] == case).mean()
+        for var, val in zip(variables, x):
+            prob *= ((dataset[var].iloc[index] == val) + 1)/(den+len(variables))
+        results[prob] = case
+    best = max(results.keys())
+    print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n' % (x, results[best]))
 
 def argentine_news(dataset_path: str):
     dataset = pd.read_excel(dataset_path)
