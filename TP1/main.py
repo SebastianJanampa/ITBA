@@ -29,7 +29,7 @@ def british_preferences(dataset_path: str, scones: bool, cerveza: bool, whisky: 
         den = len(index)
         prob = (dataset['Nacionalidad'] == case).mean()
         for var, val in zip(variables, x):
-            prob *= ((dataset[var].iloc[index] == val) + 1)/(den+len(variables))
+            prob *= ((dataset[var].iloc[index] == val).sum() + 1)/(den+2)
         results[prob] = case
     best = max(results.keys())
     print('Dado los datos %s, hay una mayor probabilidad de que el sujeto sea %s\n\n' % (x, results[best]))
