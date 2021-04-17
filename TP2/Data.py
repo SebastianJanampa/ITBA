@@ -31,3 +31,6 @@ class Data:
         for probability in self.categories_probabilities.values:
             entropy -= probability * math.log2(probability)
         return entropy
+
+    def subset(self, length: int):
+        return self.dataset.sample(n=length, replace=True, axis='index')

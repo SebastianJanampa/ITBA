@@ -104,3 +104,17 @@ class Tree:
         plt.ylabel('Precision')
         plt.legend(loc='upper left')
         plt.show()
+
+    @staticmethod
+    def random_forest(train_dataset: Data, test_dataset: Data, trees: int):
+        best_precision = 0
+        best_tree: Tree = None
+
+        for i in range(trees):
+            tree = Tree(Data(train_dataset.subset(len(train_dataset.dataset)), train_dataset.goal), None)
+            precision = tree.classify_dataset(test_dataset)
+            if precision > best_precision:
+                best_tree = tree
+                best_precision = precision
+
+        return best_tree
