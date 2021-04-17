@@ -13,10 +13,24 @@ class Tree:
                 return
 
         # step 1.3
-        if (len(dataset.dataset)) == 0:
+        if (len(dataset.dataset)) == 0 or len(dataset.attributes) == 0:
             self.node_value = str(dataset.categories_probabilities.idxmax)
+            return
 
         self.dataset = dataset
 
-        # step 4.1
+        # step 4.1 and 4.2 (get attribute with max gain)
+        attribute_with_max_gain = None
+        max_gain = 0
+
+        for attribute in dataset.attributes:
+            attribute_gain = dataset.gain(attribute)
+            if attribute_gain > max_gain:
+                max_gain = attribute_gain
+                attribute_with_max_gain = attribute
+
+
+
+
+
 
