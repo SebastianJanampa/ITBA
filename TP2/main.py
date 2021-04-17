@@ -2,7 +2,6 @@ import argparse
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
-import numpy as np
 
 from TP2.Data import Data
 from TP2.ID3 import Tree
@@ -41,13 +40,13 @@ def amount_categories(amount):
         return 'demasiado'
 
 
-def german_credit(dataset_path: str, train_percentage: float, goal: str, id2: bool, knn: bool):
+def german_credit(dataset_path: str, train_percentage: float, goal: str, id3: bool, random_forest: bool):
     dataset = pd.read_csv(dataset_path)
 
-    # Categorizacion de variables
-    # min 4 max 72]
+    # Attributes categorization
+    # min 4 max 72
     dataset['Duration of Credit (month)'] = dataset['Duration of Credit (month)'].apply(lambda value: month_categories(value))
-    # min 19 max 75]
+    # min 19 max 75
     dataset['Age (years)'] = dataset['Age (years)'].apply(lambda value: age_categories(value))
     # min 250 max 18424
     dataset['Credit Amount'] = dataset['Credit Amount'].apply(lambda value: amount_categories(value))
@@ -58,7 +57,15 @@ def german_credit(dataset_path: str, train_percentage: float, goal: str, id2: bo
     train_data = Data(train, goal)
     test_data = Data(test, goal)
 
-    Tree(train_data)
+    if id3:
+        tree = Tree(train_data, None)
+        print_table(tree.confusion_matrix(test_data))
+        tree.plot_precision_curve(train_data, test_data)
+
+    if random_forest:
+        forest = Tree.random_forest(train_data, test_data, 20)
+        print_table(forest.confusion_matrix(test_data))
+        forest.plot_precision_curve({'Train Dataset': train_data, 'Test Dataset': test_data})
 
 
 def reviews_sentiment(dataset_path: str):
@@ -66,31 +73,18 @@ def reviews_sentiment(dataset_path: str):
     pass
 
 
-def confusion_matrix(categories, raw_results, expected_results):
-    print()
-    categories = [c for c in categories if isinstance(c, str)]
-    confusion_matrix = {c: {c: 0 for c in categories} for c in categories}
-    for j, _ in expected_results.iteritems():
-        predictions = raw_results[j]
-        expected_result = expected_results[j]
-        predicted_result = max(predictions, key=lambda i: predictions[i])
-        confusion_matrix[expected_result][predicted_result] += 1
-    return confusion_matrix
-
-
 def print_table(table):
     rows = list(table.keys())
     columns = list(table[rows[0]].keys())
-    row_len = 15
 
-    matrix = ''.ljust(row_len)[:row_len] + ' '
+    matrix = ''.ljust(14)[:14] + ' '
     for col in columns:
-        matrix += col.ljust(row_len)[:row_len] + ' '
+        matrix += col.ljust(14)[:14] + ' '
 
     for row in rows:
-        matrix += '\n' + row.ljust(row_len)[:row_len] + ' '
+        matrix += '\n' + row.ljust(14)[:14] + ' '
         for col in columns:
-            matrix += str(table[row][col]).ljust(row_len)[:row_len] + ' '
+            matrix += str(table[row][col]).ljust(14)[:14] + ' '
 
     print(matrix)
 
@@ -104,11 +98,12 @@ def main():
     argparser.add_argument('-t', '--train_percentage', type=float, required=True)
     argparser.add_argument('-o', '--objetivo', required=True)
     argparser.add_argument('-id3', '--id3', action='store_true', required=False)
-    argparser.add_argument('-knn', '--knn', action='store_true', required=False)
+    argparser.add_argument('-rf', '--random_forest', action='store_true', required=False)
     args = vars(argparser.parse_args())
 
     switcher = {
-        1: lambda: german_credit(args['dataset_path'], args['train_percentage'], args['objetivo'], args['id3'], args['knn']),
+        1: lambda: german_credit(args['dataset_path'], args['train_percentage'], args['objetivo'],
+                                 args['id3'], args['random_forest']),
         2: lambda: reviews_sentiment(args['dataset_path'])
     }
     switcher.get(args['exercise'])()

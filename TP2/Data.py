@@ -31,4 +31,3 @@ class Data:
         for probability in self.categories_probabilities.values:
             entropy -= probability * math.log2(probability)
         return entropy
-
