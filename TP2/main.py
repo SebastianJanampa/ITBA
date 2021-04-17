@@ -1,6 +1,5 @@
 import argparse
 import pandas as pd
-from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 
 from TP2.Data import Data
@@ -45,7 +44,8 @@ def german_credit(dataset_path: str, train_percentage: float, goal: str, id3: bo
 
     # Attributes categorization
     # min 4 max 72
-    dataset['Duration of Credit (month)'] = dataset['Duration of Credit (month)'].apply(lambda value: month_categories(value))
+    dataset['Duration of Credit (month)'] = dataset['Duration of Credit (month)']. \
+        apply(lambda value: month_categories(value))
     # min 19 max 75
     dataset['Age (years)'] = dataset['Age (years)'].apply(lambda value: age_categories(value))
     # min 250 max 18424
@@ -60,7 +60,7 @@ def german_credit(dataset_path: str, train_percentage: float, goal: str, id3: bo
     if id3:
         tree = Tree(train_data, None)
         print_table(tree.confusion_matrix(test_data))
-        tree.plot_precision_curve(train_data, test_data)
+        tree.plot_precision_curve({'Train Dataset': train_data, 'Test Dataset': test_data})
 
     if random_forest:
         forest = Tree.random_forest(train_data, test_data, 20)
