@@ -1,3 +1,5 @@
+import math
+
 from pandas import DataFrame
 
 
@@ -12,7 +14,21 @@ class Data:
                                         (len(dataset[goal]) + len(dataset[goal].unique()))  # Laplace
         self.attributes_probabilities = {}
 
-        attributes = list(set(dataset.columns) - {goal})
-        for attribute in attributes:
+        self.attributes = list(set(dataset.columns) - {goal})
+        for attribute in self.attributes:
             self.attributes_probabilities[attribute] = (dataset[attribute].value_counts() + 1) / \
                                                         (len(dataset[attribute]) + len(dataset[attribute].unique()))
+
+    def gain(self, attribute: str):
+        gain = self.entropy()
+        for attribute_value in self.attributes_probabilities[attribute].keys():
+            subset = Data(self.dataset[self.dataset[attribute] == attribute_value], self.goal)
+            gain -= (len(subset.dataset)/len(self.dataset)) * subset.entropy()
+        return gain
+
+    def entropy(self):
+        entropy = 0
+        for probability in self.categories_probabilities.values:
+            entropy -= probability * math.log2(probability)
+        return entropy
+
