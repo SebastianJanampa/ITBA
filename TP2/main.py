@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from TP2.Data import Data
-from TP2.ID3 import Tree
+from TP2.ID3 import Tree, KNN
 
 
 def month_categories(months):
@@ -69,9 +69,31 @@ def german_credit(dataset_path: str, train_percentage: float, goal: str, id3: bo
 
 
 def reviews_sentiment(dataset_path: str):
-    dataset = pd.read_excel(dataset_path)
-    pass
+    df = pd.read_csv(dataset_path, sep=';')
+    # Preprocesamiento
+    def sentimentNum(text):
+        if text == 'negative':
+            return 0
+        else:
+            return 1
 
+    df.textSentiment = df.textSentiment.apply(sentimentNum)
+    df.titleSentiment = df.titleSentiment.apply(sentimentNum)
+    df.drop(columns=['Review Title', 'Review Text'], inplace=True)
+    # Inciso a
+    print('Inciso a: %.3f'%df.wordcount[df['Star Rating']==1].mean())
+    # Inciso b
+    Xtrain, Xtest, Ytrain, Ytest = train_test_split(df.drop(columns=['Star Rating']),
+                                                    df['Star Rating'],
+                                                    train_size=0.6, random_state=42)
+    # Clasificador
+    clf = KNN(k=5)
+    clf.fit(Xtrain, Ytrain)
+    # Sin Pesos
+    y_pred = clf.predict(Xtest)
+    clf.precision(Ytest.to_numpy(), y_pred)
+    clf.conf_matrix(Ytest.to_numpy(), y_pred)
+    # Con pesos
 
 def print_table(table):
     rows = list(table.keys())
@@ -95,8 +117,8 @@ def main():
 
     argparser.add_argument('-e', '--exercise', type=int, choices=[1, 2], required=True)
     argparser.add_argument('-d', '--dataset_path', required=True)
-    argparser.add_argument('-t', '--train_percentage', type=float, required=True)
-    argparser.add_argument('-o', '--objetivo', required=True)
+    argparser.add_argument('-t', '--train_percentage', type=float, required=False)
+    argparser.add_argument('-o', '--objetivo', required=False)
     argparser.add_argument('-id3', '--id3', action='store_true', required=False)
     argparser.add_argument('-rf', '--random_forest', action='store_true', required=False)
     args = vars(argparser.parse_args())

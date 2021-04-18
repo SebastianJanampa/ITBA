@@ -1,6 +1,7 @@
 from TP2.Data import Data
 import matplotlib.pyplot as plt
-
+import numpy as np
+import seaborn as sns
 
 class Tree:
     node_attribute: str
@@ -118,3 +119,54 @@ class Tree:
                 best_precision = precision
 
         return best_tree
+
+class KNN():
+    def __init__(self, k):
+        self.k = k
+
+    def fit(self, Xtrain, Ytrain):
+        self.Xtrain = Xtrain.to_numpy()
+        self.Ytrain = Ytrain.to_numpy()
+
+    def precision(self, y_true, y_pred):
+        cases = [1, 2, 3, 4, 5]
+        for case in cases:
+            TP = (np.where(y_pred == case, case, 0) == y_true).sum()
+            den = (y_pred == case).sum()
+            print('Precision for %i: %.2f' % (case, TP / den))
+
+    def conf_matrix(self, y_true, y_pred):
+        classes = [1, 2, 3, 4, 5]
+        matrix1 = {c: {c: 0 for c in classes} for c in classes}
+        matrix2 = np.zeros([len(classes), len(classes)])
+        for i, j in zip(y_pred, y_true):
+            matrix1[j][i] += 1
+            matrix2[int(j-1), int(i-1)] += 1
+        sns.heatmap(matrix2, annot=True)
+        plt.show()
+        return matrix1
+
+    def predict(self, X, weights=None):
+        distances = self.calculate_distances(X.to_numpy(), weights)
+        return self.predict_labels(distances)
+
+    def calculate_distances(self, X, weights=None):
+        """
+        return:  (Xtest-Xtrain)**2
+        """
+        if weights is None:
+            weights = np.ones(self.Xtrain.shape[-1])
+        num_test = len(X)
+        num_train = len(self.Xtrain)
+        distances = np.zeros((num_test, num_train))
+        for i in range(num_test):
+            distances[i, :] = (weights * (X[i] - self.Xtrain) ** 2).sum(axis=1)
+        return distances
+
+    def predict_labels(self, distances):
+        indices = np.argsort(distances, axis=1)
+        k_closest_classes = np.array(self.Ytrain[indices[:, :self.k]], dtype=np.int64)
+        count_classes = np.apply_along_axis(lambda x: np.bincount(x, minlength=6),
+                                            axis=1, arr=k_closest_classes)
+        y_pred = np.argmax(count_classes, axis=1)
+        return y_pred
