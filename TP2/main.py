@@ -77,15 +77,23 @@ def reviews_sentiment(dataset_path: str):
         else:
             return 1
 
+    def titleNum(text):
+        if text == 'negative':
+            return -1
+        elif text == 'positive':
+            return 1
+        else:
+            return 0
+
     df.textSentiment = df.textSentiment.apply(sentimentNum)
-    df.titleSentiment = df.titleSentiment.apply(sentimentNum)
+    df.titleSentiment = df.titleSentiment.apply(titleNum)
     df.drop(columns=['Review Title', 'Review Text'], inplace=True)
     # Inciso a
     print('Inciso a: %.3f'%df.wordcount[df['Star Rating']==1].mean())
     # Inciso b
     Xtrain, Xtest, Ytrain, Ytest = train_test_split(df.drop(columns=['Star Rating']),
                                                     df['Star Rating'],
-                                                    train_size=0.6, random_state=42)
+                                                    train_size=0.75, random_state=42)
     print('Inciso b: El training set contiene %i datos; y el testitng set, %i'%(len(Xtrain), len(Xtest)))
     # Clasificador
     clf = KNN(k=5)
@@ -96,6 +104,10 @@ def reviews_sentiment(dataset_path: str):
     clf.precision(Ytest.to_numpy(), y_pred)
     clf.conf_matrix(Ytest.to_numpy(), y_pred)
     # Con pesos
+    y_pred = clf.predict(Xtest, weights=True)
+    print('Inciso c & d (con pesos):')
+    clf.precision(Ytest.to_numpy(), y_pred)
+    clf.conf_matrix(Ytest.to_numpy(), y_pred)
 
 def print_table(table):
     rows = list(table.keys())
