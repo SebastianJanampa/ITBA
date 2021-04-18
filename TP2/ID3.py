@@ -143,6 +143,8 @@ class KNN():
             matrix1[j][i] += 1
             matrix2[int(j-1), int(i-1)] += 1
         sns.heatmap(matrix2, annot=True)
+        plt.xlabel('Training')
+        plt.ylabel('Testing')
         plt.show()
         return matrix1
 

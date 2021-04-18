@@ -86,11 +86,13 @@ def reviews_sentiment(dataset_path: str):
     Xtrain, Xtest, Ytrain, Ytest = train_test_split(df.drop(columns=['Star Rating']),
                                                     df['Star Rating'],
                                                     train_size=0.6, random_state=42)
+    print('Inciso b: El training set contiene %i datos; y el testitng set, %i'%(len(Xtrain), len(Xtest)))
     # Clasificador
     clf = KNN(k=5)
     clf.fit(Xtrain, Ytrain)
     # Sin Pesos
     y_pred = clf.predict(Xtest)
+    print('Inciso c & d (sin pesos):')
     clf.precision(Ytest.to_numpy(), y_pred)
     clf.conf_matrix(Ytest.to_numpy(), y_pred)
     # Con pesos
