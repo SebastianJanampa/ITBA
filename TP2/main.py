@@ -3,7 +3,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from TP2.Data import Data
-from TP2.ID3 import Tree, KNN
+from TP2.ID3 import Tree
+from TP2.KNN import KNN
 
 
 def month_categories(months):
@@ -70,14 +71,15 @@ def german_credit(dataset_path: str, train_percentage: float, goal: str, id3: bo
 
 def reviews_sentiment(dataset_path: str):
     df = pd.read_csv(dataset_path, sep=';')
-    # Preprocesamiento
-    def sentimentNum(text):
+
+    # Preprocessing
+    def sentiment_num(text):
         if text == 'negative':
             return 0
         else:
             return 1
 
-    def titleNum(text):
+    def title_num(text):
         if text == 'negative':
             return -1
         elif text == 'positive':
@@ -85,16 +87,16 @@ def reviews_sentiment(dataset_path: str):
         else:
             return 0
 
-    df.textSentiment = df.textSentiment.apply(sentimentNum)
-    df.titleSentiment = df.titleSentiment.apply(titleNum)
+    df.textSentiment = df.textSentiment.apply(sentiment_num)
+    df.titleSentiment = df.titleSentiment.apply(title_num)
     df.drop(columns=['Review Title', 'Review Text'], inplace=True)
     # Inciso a
-    print('Inciso a: %.3f'%df.wordcount[df['Star Rating']==1].mean())
+    print('Inciso a: %.3f' % df.wordcount[df['Star Rating'] == 1].mean())
     # Inciso b
     Xtrain, Xtest, Ytrain, Ytest = train_test_split(df.drop(columns=['Star Rating']),
                                                     df['Star Rating'],
                                                     train_size=0.75, random_state=42)
-    print('Inciso b: El training set contiene %i datos; y el testitng set, %i'%(len(Xtrain), len(Xtest)))
+    print('Inciso b: El training set contiene %i datos; y el testing set, %i' % (len(Xtrain), len(Xtest)))
     # Clasificador
     clf = KNN(k=5)
     clf.fit(Xtrain, Ytrain)
@@ -108,6 +110,7 @@ def reviews_sentiment(dataset_path: str):
     print('Inciso c & d (con pesos):')
     clf.precision(Ytest.to_numpy(), y_pred)
     clf.conf_matrix(Ytest.to_numpy(), y_pred)
+
 
 def print_table(table):
     rows = list(table.keys())
