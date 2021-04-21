@@ -28,6 +28,7 @@ class KNN:
             f1 = 2 * TP / (2 * TP + FP + FN)
             print('FOR %i: precision %.2f, accuracy %.2f, recall %.2f, F1 %.2f'
                   % (case, pr, ac, re, f1))
+        print('Precisión del clasificador: %.2f'%((y_true==y_pred).sum()/len(y_true)*100))
 
     def conf_matrix(self, y_true, y_pred):
         classes = [1, 2, 3, 4, 5]
