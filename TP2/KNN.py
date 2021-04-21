@@ -33,12 +33,12 @@ class KNN:
         classes = [1, 2, 3, 4, 5]
         matrix1 = {c: {c: 0 for c in classes} for c in classes}
         matrix2 = np.zeros([len(classes), len(classes)])
-        for i, j in zip(y_true, y_pred):
+        for i, j in zip(y_pred, y_true):
             matrix1[j][i] += 1
             matrix2[int(j - 1), int(i - 1)] += 1
         sns.heatmap(matrix2, annot=True)
-        plt.xlabel('Ground Truth')
-        plt.ylabel('Predictions')
+        plt.xlabel('Predictions')
+        plt.ylabel('Ground Truth')
         plt.show()
         return matrix1
 
