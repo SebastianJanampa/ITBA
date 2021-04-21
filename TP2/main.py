@@ -69,7 +69,7 @@ def german_credit(dataset_path: str, train_percentage: float, goal: str, id3: bo
         forest.plot_precision_curve({'Train Dataset': train_data, 'Test Dataset': test_data})
 
 
-def reviews_sentiment(dataset_path: str):
+def reviews_sentiment(dataset_path: str, train_percentage: float):
     df = pd.read_csv(dataset_path, sep=';')
 
     # Preprocessing
@@ -95,7 +95,7 @@ def reviews_sentiment(dataset_path: str):
     # Inciso b
     Xtrain, Xtest, Ytrain, Ytest = train_test_split(df.drop(columns=['Star Rating']),
                                                     df['Star Rating'],
-                                                    train_size=0.75, random_state=42)
+                                                    train_size=train_percentage, random_state=42)
     print('Inciso b: El training set contiene %i datos; y el testing set, %i' % (len(Xtrain), len(Xtest)))
     # Clasificador
     clf = KNN(k=5)
@@ -134,7 +134,7 @@ def main():
 
     argparser.add_argument('-e', '--exercise', type=int, choices=[1, 2], required=True)
     argparser.add_argument('-d', '--dataset_path', required=True)
-    argparser.add_argument('-t', '--train_percentage', type=float, required=False)
+    argparser.add_argument('-t', '--train_percentage', type=float, required=True)
     argparser.add_argument('-o', '--objetivo', required=False)
     argparser.add_argument('-id3', '--id3', action='store_true', required=False)
     argparser.add_argument('-rf', '--random_forest', action='store_true', required=False)
@@ -143,7 +143,7 @@ def main():
     switcher = {
         1: lambda: german_credit(args['dataset_path'], args['train_percentage'], args['objetivo'],
                                  args['id3'], args['random_forest']),
-        2: lambda: reviews_sentiment(args['dataset_path'])
+        2: lambda: reviews_sentiment(args['dataset_path'], args['train_percentage'])
     }
     switcher.get(args['exercise'])()
 
